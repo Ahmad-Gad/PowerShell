@@ -2,21 +2,26 @@
 ## Decription: Scan the security headers from a specified URL and display the report with the required actions.
 ## Author: Ahmad Gad
 ## Contact Email: ahmad.gad@outlook.ie, ahmad.adel@jemmail.com
-## Version: 1.1
+## Version: 1.2
 ## WebSite: https://github.com/Ahmad-Gad/PowerShell
 ## Date Format: DD/MM/YYYY
 ## Created On: 28/08/2021
-## Updated On: 22/05/2026
+## Updated On: 27/05/2026
 ## Minimum PowerShell Version: 5.1
 ## Minimum CLR Version: 4.0.30319.42000 
 ## PowerShell Core Supported: Yes
 ## For more details please execute the following command after you execute this script: Get-Help Test-WebRequestSecurity -Detailed;
 ## References:
 ##   OWSP HTTP Headers Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html
+##   CentralCSP: https://centralcsp.com/docs/
+##   Mozilla HTTP Headers: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+##   Mozilla CSP: https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP
+##   https://content-security-policy.com/
+##   W3.Org: https://www.w3.org/TR/2011/WD-CSP-20111129/
+##   Web DEV CSP: https://web.dev/articles/strict-csp
+##   Web Dev Security Headers: https://web.dev/articles/security-headers
 ##   Revoked Certificate Website: https://revoked.grc.com
 ##  "https://tls13.1d.pw" #Testing website that supports only TLS 1.3
-## Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Cryptography\Configuration\Local\SSL\00010002" -Name "Functions";
-## Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Cryptography\Configuration\Local\SSL\00010002";
 
 #region Types
 Enum SecurityHeaderStatus
@@ -170,6 +175,8 @@ Function Test-WebRequestSecurity
         The URI in string format or [System.Uri] type.
       .OUTPUTS
         Report
+      .LINK
+        https://github.com/Ahmad-Gad/PowerShell
       .EXAMPLE
         Test-WebRequestSecurity -Uri "https://mysite.com";
       .EXAMPLE
@@ -459,14 +466,22 @@ Function Test-WebRequestSecurity
         );
 
         [Details[]]$requiredCspValues = [Details[]]@(
-            [Details]::New("frame-ancestors", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors", "This CSP value obsoletes the 'X-Frame-Options' which may longer be supported by some browsers. So, even if the 'X-Frame-Options' exists, this value should be added to make sure it is supported by all the browsers.", "The HTTP Content-Security-Policy (CSP) frame-ancestors directive specifies valid parents that may embed a page using <frame>, <iframe>, <object>, <embed>, or <applet>.", "'none' or 'self'"),
             [Details]::New("default-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src", "The expected value should be either default-src 'self;' or default-src 'none';", "The HTTP Content-Security-Policy (CSP) default-src directive serves as a fallback for the other CSP fetch directives.", "'none' or 'self'"),
+            [Details]::New("frame-ancestors", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors", "This CSP value obsoletes the 'X-Frame-Options' which may longer be supported by some browsers. So, even if the 'X-Frame-Options' exists, this value should be added to make sure it is supported by all the browsers.", "The HTTP Content-Security-Policy (CSP) frame-ancestors directive specifies valid parents that may embed a page using <frame>, <iframe>, <object>, <embed>, or <applet>.", "'none' or 'self'"),
             [Details]::New("object-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/object-src", "Elements controlled by object-src are perhaps coincidentally considered legacy HTML elements and aren't receiving new standardized features (such as the security attributes sandbox or allow for <iframe>). Therefore it is recommended to restrict this fetch-directive (e.g. explicitly set object-src 'none' if possible).", "The HTTP Content-Security-Policy object-src directive specifies valid sources for the <object>, <embed>, and <applet> elements.", "'none', 'self'"),
             [Details]::New("frame-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src", $null, "The HTTP Content-Security-Policy (CSP) frame-src directive specifies valid sources for nested browsing contexts loading using elements such as <frame> and <iframe>.", "'none', 'self'"),
             [Details]::New("img-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/img-src", $null, "The HTTP Content-Security-Policy img-src directive specifies valid sources of images and favicons.", "'none', 'self'"),
             [Details]::New("font-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/font-src",$null, "The HTTP Content-Security-Policy (CSP) font-src directive specifies valid sources for fonts loaded using @font-face.", "'none', 'self'"),
             [Details]::New("script-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src", $null, "The HTTP Content-Security-Policy (CSP) script-src directive specifies valid sources for JavaScript. This includes not only URLs loaded directly into <script> elements, but also things like inline script event handlers (onclick) and XSLT stylesheets which can trigger script execution.", "'none', 'self', 'nonce-?????' or hash"),
             [Details]::New("style-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src", $null, "The HTTP Content-Security-Policy (CSP) style-src directive specifies valid sources for CSS styles. This includes not only URLs loaded directly into <style> elements, but also things like inline styles.", "'none', 'self', 'nonce-?????' or hash"),
+            [Details]::New("connect-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/connect-src", $null, "connect-src directive in a Content Security Policy (CSP) restricts the URLs your website can communicate with using JavaScript.", "'none', 'self'"),
+            [Details]::New("manifest-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/manifest-src", $null, "The manifest-src directive in a Content Security Policy (CSP) is crucial because it restricts where a browser can load your Web App Manifest. This prevents attackers from injecting malicious manifests that alter your app's name, icons, start URL, or theme colors to trick users or mimic a different application.", "'none', 'self'"),
+            [Details]::New("worker-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/worker-src", $null, "The CSP worker-src directive is crucial for modern web security because it prevents malicious code from spawning unauthorized, hidden background threads (like Web Workers or Service Workers).", "'none', 'self'"),
+            [Details]::New("child-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/child-src", $null, "The child-src directive defines valid, trusted sources where a web page can load nested browsing contexts (like <iframe> and <frame>) and web workers. It is critical because it prevents attackers from embedding malicious web pages or spawning rogue background scripts (like cryptominers) that operate outside your domain's direct control.", "'none', 'self'"),
+            [Details]::New("media-src", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/media-src", $null, "The media-src directive in a Content Security Policy (CSP) is important because it restricts where your website can load audio and video files. By whitelisting authorized domains, it prevents attackers from injecting malicious media or hijacking your media elements to serve unauthorized, deceptive, or hijacked content.", "'none', 'self'"),
+            [Details]::New("base-uri", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/base-uri", $null, "The base-uri directive in a Content Security Policy (CSP) is critical for preventing attackers from hijacking relative URLs and manipulating site navigation. It restricts the domains that can be used in the HTML <base> element.", "'none', 'self'"),
+            [Details]::New("form-action", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/form-action", $null, "The CSP form-action directive restricts the URLs that web forms are allowed to submit data to. It is a critical defense-in-depth measure because it prevents malicious code from hijacking your forms and sending sensitive user data to external attacker-controlled servers.", "'none', 'self'"),
+            [Details]::New("script-src-attr", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src-attr", $null, "The script-src-attr directive controls which JavaScript sources can be loaded and executed from HTML script elements with specific attributes. This directive specifically applies to inline scripts that use attributes like onclick, onload, onerror, etc.", "'none'"),
             [Details]::New("Upgrade-Insecure-Requests", "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Upgrade-Insecure-Requests", $null, "The Upgrade-Insecure-Requests directive in a Content Security Policy (CSP) tells the browser to automatically rewrite all HTTP URLs to HTTPS before making a request. It is vital for fixing mixed-content warnings, migrating legacy sites to HTTPS without manual URL updates, and protecting user data.")
         );
 
@@ -726,9 +741,11 @@ Function Test-WebRequestSecurity
         [Header[]]$headers = @();
         $rawHeaders.Keys | ForEach-Object {
             $key = $_;
-            $value = $rawHeaders[$_][0];
-            $header = [Header]::New($key, $value);
-            $headers += $header;
+            $value = $rawHeaders[$_];
+            $value | ForEach-Object {
+                $header = [Header]::New($key, $_);
+                $headers += $header;
+            }
         };
 
         Return $headers;
